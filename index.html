@@ -662,7 +662,7 @@ async function startVapiCall() {
     return;
   }
   try {
-    if (!window.Vapi) await loadScript("https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.0.0/dist/vapi.umd.js");
+    if (!window.Vapi) await loadScript("https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.5.2/dist/vapi.min.js");
 
     const firstMsg = state.patient.firstName
       ? "Hello " + state.patient.firstName + "! This is Kyra from Kyron Medical. I have your chat context — let's continue where we left off."
