@@ -131,7 +131,11 @@ app.post('/api/chat', async (req, res) => {
       messages: messages.slice(-10)
     });
 
-    res.json({ reply: response.content[0].text });
+    const rawReply = response.content[0].text;
+    const formatted = rawReply
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+    res.json({ reply: formatted, isHTML: true });
   } catch (err) {
     console.error('Claude error:', err);
     res.status(500).json({ error: err.message });

@@ -382,7 +382,7 @@ async function route(text) {
     } else {
       const reply = await askClaude(text);
       removeTyping();
-      if (reply) { addAI(reply, false); state.history.push({ role:"assistant", content:reply }); }
+      if (reply) { addAI(reply, true); state.history.push({ role:"assistant", content:reply }); }
       setChips(["📅 Schedule Appointment", "💊 Prescription Refill", "📍 Office Info & Hours"]);
     }
     return;
@@ -434,7 +434,7 @@ async function route(text) {
       await loadSlots(state.matchedDoctor.id, dayMap[dm[1]]);
     } else {
       const reply = await askClaude(text);
-      if (reply) { addAI(reply, false); state.history.push({ role:"assistant", content:reply }); }
+      if (reply) { addAI(reply, true); state.history.push({ role:"assistant", content:reply }); }
     }
     return;
   }
@@ -453,7 +453,7 @@ async function route(text) {
   // FALLBACK
   const reply = await askClaude(text);
   removeTyping();
-  if (reply) { addAI(reply, false); state.history.push({ role:"assistant", content:reply }); }
+  if (reply) { addAI(reply, true); state.history.push({ role:"assistant", content:reply }); }
   if (state.step === "greeting") setChips(["📅 Schedule Appointment", "💊 Prescription Refill", "📍 Office Info & Hours"]);
 }
 
@@ -466,7 +466,8 @@ async function askClaude(text) {
     });
     if (!res.ok) throw new Error("Server error " + res.status);
     const data = await res.json();
-    return data.reply || "I'm sorry, I had trouble with that. Could you try again?";
+    const raw = data.reply || "I'm sorry, I had trouble with that. Could you try again?";
+    return raw.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
   } catch(e) {
     console.error("Claude error:", e);
     return "I'm having a connection issue right now. Please try again in a moment.";
