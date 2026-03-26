@@ -163,7 +163,13 @@ app.post('/api/slots', (req, res) => {
   if (filterDay) {
     slots = slots.filter(s => s.date.toLowerCase().startsWith(filterDay.toLowerCase()));
   }
-  res.json({ slots: slots.slice(0, 9), doctorName: doctor.name });
+  const slotsWithWait = slots.slice(0, 9).map((s, i) => ({...s,
+  waitLabel: i === 0 ? "⚡ Next available" :
+             i === 1 ? "~15 min wait" :
+             i === 2 ? "~30 min wait" :
+             i < 5   ? "~" + (i * 15) + " min wait" : "Flexible"
+}));
+res.json({ slots: slotsWithWait, doctorName: doctor.name });
 });
 
 // ─── API: BOOK APPOINTMENT ────────────────────────────

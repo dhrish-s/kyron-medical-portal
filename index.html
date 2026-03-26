@@ -546,6 +546,7 @@ function buildSlotsHTML(slots) {
     '<div class="slot" onclick="selectSlot(\'' + esc(s.iso) + '\',\'' + esc(s.time) + '\',\'' + esc(s.date) + '\')">' +
       '<div class="slot-date">' + esc(s.date) + '</div>' +
       '<div class="slot-time">' + esc(s.time) + '</div>' +
+      '<div style="font-size:10px;margin-top:3px;color:' + (s.waitLabel === '⚡ Next available' ? '#4ade80' : 'var(--kyron-cyan)') + '">' + esc(s.waitLabel||'') + '</div>' +
     '</div>'
   ).join("");
   return '<div style="font-size:12px;color:var(--text-muted);margin-bottom:9px">Select a time that works for you:</div>' +
