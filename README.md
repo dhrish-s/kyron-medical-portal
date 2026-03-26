@@ -86,17 +86,3 @@ For local testing, run on localhost with Chrome microphone
 permissions manually enabled.
 ```
 
----
-
-## Your submission is strong:
-```
-✅ Full appointment scheduling
-✅ Doctor matching
-✅ Email confirmation  
-✅ Voice modal with context transfer
-✅ Prescription refill
-✅ Office info
-✅ Live on EC2
-✅ GitHub repo with clean commits
-✅ Liquid glass UI
-⚠️  Voice audio — works, needs trusted SSL cert
