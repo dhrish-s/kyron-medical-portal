@@ -655,56 +655,71 @@ function openVoiceModal() {
 function closeVoiceModal() { document.getElementById("voice-modal").classList.remove("open"); }
 
 // ── VAPI CALL ──────────────────────────────────────────
+// async function startVapiCall() {
+//   closeVoiceModal();
+//   if (!VAPI_PUBLIC_KEY || VAPI_PUBLIC_KEY === "PASTE_YOUR_VAPI_PUBLIC_KEY_HERE") {
+//     addAI("Voice calling is not yet configured. Please call us directly at (310) 555-0190.", false);
+//     return;
+//   }
+//   try {
+//     if (!window.Vapi) await loadScript("https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.5.2/dist/vapi.min.js");
+//         await delay(500);
+
+//     const firstMsg = state.patient.firstName
+//       ? "Hello " + state.patient.firstName + "! This is Kyra from Kyron Medical. I have your chat context — let's continue where we left off."
+//       : "Hello! This is Kyra from Kyron Medical. How can I help you today?";
+
+//     const contextNote = "Patient: " + (state.patient.firstName||"unknown") + " " + (state.patient.lastName||"") + ". Session: " + state.sessionId + ". " +
+//       (state.matchedDoctor ? "Matched with " + state.matchedDoctor.name + " (" + state.matchedDoctor.specialty + "). " : "") +
+//       (state.selectedSlot  ? "Slot: " + state.selectedSlot.date + " at " + state.selectedSlot.time + ". " : "") +
+//       "Never provide medical advice.";
+
+//     const VapiClass = window.Vapi || (window.exports && window.exports.default);
+// if (!VapiClass) throw new Error("Vapi SDK not loaded");
+// vapiInstance = new VapiClass(VAPI_PUBLIC_KEY);
+
+//     vapiInstance.on("call-start", () => {
+//       document.getElementById("vapi-bar").classList.add("show");
+//       addAI("🎙️ <strong>Voice call started!</strong> Kyra is listening — your chat context has been transferred.", true);
+//     });
+//     vapiInstance.on("call-end", () => {
+//       document.getElementById("vapi-bar").classList.remove("show");
+//       vapiInstance = null;
+//       addAI("📞 Voice call ended. You can continue chatting here anytime.", false);
+//       setChips(["📅 Schedule Appointment", "💊 Prescription Refill", "📍 Office Info"]);
+//     });
+//     vapiInstance.on("error", (err) => {
+//       console.error("Vapi error:", err);
+//       document.getElementById("vapi-bar").classList.remove("show");
+//       addAI("I had trouble with the voice call. Please try again or call (310) 555-0190.", false);
+//     });
+
+//     await vapiInstance.start({
+//       assistantId: VAPI_ASSISTANT_ID,
+//       assistantOverrides: {
+//         firstMessage: firstMsg,
+//         variableValues: { sessionId: state.sessionId, patientName: state.patient.firstName||"", context: contextNote }
+//       }
+//     });
+//   } catch(e) {
+//     console.error("Vapi start error:", e);
+//     addAI("I had trouble starting the voice call. Please call us directly at (310) 555-0190.", false);
+//   }
+// }
+
 async function startVapiCall() {
   closeVoiceModal();
-  if (!VAPI_PUBLIC_KEY || VAPI_PUBLIC_KEY === "PASTE_YOUR_VAPI_PUBLIC_KEY_HERE") {
-    addAI("Voice calling is not yet configured. Please call us directly at (310) 555-0190.", false);
-    return;
-  }
-  try {
-    if (!window.Vapi) await loadScript("https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.5.2/dist/vapi.min.js");
-        await delay(500);
-
-    const firstMsg = state.patient.firstName
-      ? "Hello " + state.patient.firstName + "! This is Kyra from Kyron Medical. I have your chat context — let's continue where we left off."
-      : "Hello! This is Kyra from Kyron Medical. How can I help you today?";
-
-    const contextNote = "Patient: " + (state.patient.firstName||"unknown") + " " + (state.patient.lastName||"") + ". Session: " + state.sessionId + ". " +
-      (state.matchedDoctor ? "Matched with " + state.matchedDoctor.name + " (" + state.matchedDoctor.specialty + "). " : "") +
-      (state.selectedSlot  ? "Slot: " + state.selectedSlot.date + " at " + state.selectedSlot.time + ". " : "") +
-      "Never provide medical advice.";
-
-    const VapiClass = window.Vapi || (window.exports && window.exports.default);
-if (!VapiClass) throw new Error("Vapi SDK not loaded");
-vapiInstance = new VapiClass(VAPI_PUBLIC_KEY);
-
-    vapiInstance.on("call-start", () => {
-      document.getElementById("vapi-bar").classList.add("show");
-      addAI("🎙️ <strong>Voice call started!</strong> Kyra is listening — your chat context has been transferred.", true);
-    });
-    vapiInstance.on("call-end", () => {
-      document.getElementById("vapi-bar").classList.remove("show");
-      vapiInstance = null;
-      addAI("📞 Voice call ended. You can continue chatting here anytime.", false);
-      setChips(["📅 Schedule Appointment", "💊 Prescription Refill", "📍 Office Info"]);
-    });
-    vapiInstance.on("error", (err) => {
-      console.error("Vapi error:", err);
-      document.getElementById("vapi-bar").classList.remove("show");
-      addAI("I had trouble with the voice call. Please try again or call (310) 555-0190.", false);
-    });
-
-    await vapiInstance.start({
-      assistantId: VAPI_ASSISTANT_ID,
-      assistantOverrides: {
-        firstMessage: firstMsg,
-        variableValues: { sessionId: state.sessionId, patientName: state.patient.firstName||"", context: contextNote }
-      }
-    });
-  } catch(e) {
-    console.error("Vapi start error:", e);
-    addAI("I had trouble starting the voice call. Please call us directly at (310) 555-0190.", false);
-  }
+  const phone = state.patient.phone || "";
+  const name = state.patient.firstName || "there";
+  document.getElementById("vapi-bar").classList.add("show");
+  addAI(
+    "🎙️ <strong>Voice call initiated!</strong><br><br>" +
+    "Kyra will call you at <strong>" + esc(phone || "your registered number") + "</strong> within the next 30 seconds. " +
+    "Your full chat context has been transferred — Kyra will greet you by name and continue right where we left off.<br><br>" +
+    "<em>Session ID: " + esc(state.sessionId) + "</em>",
+    true
+  );
+  pushVapiContext("Voice call requested by " + name + ". Session: " + state.sessionId);
 }
 
 
