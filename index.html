@@ -633,8 +633,25 @@ async function startVapiCall() {
     return;
   }
   try {
-    if (!window.Vapi) await loadScript("https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/index.js");
-    vapiInstance = new window.Vapi(VAPI_PUBLIC_KEY);
+    if (!window.vapiSDK) await loadScript("https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js");
+
+    const firstMsg = state.patient.firstName
+      ? "Hello " + state.patient.firstName + "! This is Kyra from Kyron Medical. I have your chat context right here — let's continue where we left off."
+      : "Hello! This is Kyra from Kyron Medical. How can I help you today?";
+
+    const contextNote = "Patient: " + (state.patient.firstName||"unknown") + " " + (state.patient.lastName||"") + ". Session: " + state.sessionId + ". " +
+      (state.matchedDoctor ? "Matched with " + state.matchedDoctor.name + " (" + state.matchedDoctor.specialty + "). " : "") +
+      (state.selectedSlot  ? "Slot selected: " + state.selectedSlot.date + " at " + state.selectedSlot.time + ". " : "") +
+      "Continue naturally. Never provide medical advice.";
+
+    vapiInstance = window.vapiSDK.run({
+      apiKey: VAPI_PUBLIC_KEY,
+      assistant: VAPI_ASSISTANT_ID,
+      assistantOverrides: {
+        firstMessage: firstMsg,
+        variableValues: { sessionId: state.sessionId, patientName: state.patient.firstName||"", context: contextNote }
+      }
+    });
 
     vapiInstance.on("call-start", () => {
       document.getElementById("vapi-bar").classList.add("show");
@@ -652,22 +669,6 @@ async function startVapiCall() {
       addAI("I had trouble with the voice call. Please try again or call (310) 555-0190.", false);
     });
 
-    const firstMsg = state.patient.firstName
-      ? "Hello " + state.patient.firstName + "! This is Kyra from Kyron Medical. I have your chat context right here — let's continue where we left off."
-      : "Hello! This is Kyra from Kyron Medical. How can I help you today?";
-
-    const contextNote = "Patient: " + (state.patient.firstName||"unknown") + " " + (state.patient.lastName||"") + ". Session: " + state.sessionId + ". " +
-      (state.matchedDoctor ? "Matched with " + state.matchedDoctor.name + " (" + state.matchedDoctor.specialty + "). " : "") +
-      (state.selectedSlot  ? "Slot selected: " + state.selectedSlot.date + " at " + state.selectedSlot.time + ". " : "") +
-      "Continue naturally. Never provide medical advice.";
-
-    await vapiInstance.start({
-      assistantId: VAPI_ASSISTANT_ID,
-      assistantOverrides: {
-        firstMessage: firstMsg,
-        variableValues: { sessionId: state.sessionId, patientName: state.patient.firstName||"", context: contextNote }
-      }
-    });
   } catch(e) {
     console.error("Vapi start error:", e);
     addAI("I had trouble starting the voice call. Please call us directly at (310) 555-0190.", false);
