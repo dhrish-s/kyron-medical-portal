@@ -5,7 +5,7 @@ enabling patients to schedule appointments, manage prescriptions, and
 get answers through an intelligent conversational interface.
 
 ## 🌐 Live Demo
-http://3.80.182.239
+https://kyronmedical.mooo.com
 
 ## ✨ Features
 - **AI Chat** — Powered by Claude (Anthropic) for natural conversation
