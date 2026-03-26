@@ -505,9 +505,26 @@ function submitIntake() {
   state.step     = "reason";
   const form = document.getElementById("intake-form");
   if (form) { form.style.opacity=".5"; form.style.pointerEvents="none"; }
-  const smsNote = sms ? " I've noted your SMS opt-in. 📱" : "";
-  addAI("Thank you, <strong>" + esc(first) + "</strong>!" + smsNote + "<br><br>What brings you in today? Please describe your health concern or the area of your body — for example: <em>\"knee pain\"</em>, <em>\"skin rash\"</em>, <em>\"chest palpitations\"</em>, or <em>\"migraines\"</em>.", true);
-  setChips(["Knee / Joint Pain", "Skin Issue / Rash", "Heart / Chest", "Headaches / Migraines", "Back Pain", "Hair Loss"]);
+const smsNote = sms ? " I've noted your SMS opt-in. 📱" : "";
+  fetch("/api/check-patient", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ email })
+  }).then(r => r.json()).then(data => {
+    if (data.returning) {
+      addAI(
+        "Welcome back, <strong>" + esc(data.firstName) + "</strong>! 👋 I can see you previously visited us for " +
+        "<strong>" + esc(data.lastVisit.specialty) + "</strong> with <strong>" + esc(data.lastVisit.doctor) + "</strong> " +
+        "on " + esc(data.lastVisit.date) + ".<br><br>What brings you in today?",
+        true
+      );
+    } else {
+      addAI("Thank you, <strong>" + esc(first) + "</strong>!" + smsNote + "<br><br>What brings you in today? Please describe your health concern — for example: <em>\"knee pain\"</em>, <em>\"skin rash\"</em>, <em>\"chest palpitations\"</em>, or <em>\"migraines\"</em>.", true);
+    }
+    setChips(["Knee / Joint Pain", "Skin Issue / Rash", "Heart / Chest", "Headaches / Migraines", "Back Pain", "Hair Loss"]);
+  }).catch(() => {
+    addAI("Thank you, <strong>" + esc(first) + "</strong>!" + smsNote + "<br><br>What brings you in today?", true);
+    setChips(["Knee / Joint Pain", "Skin Issue / Rash", "Heart / Chest", "Headaches / Migraines", "Back Pain", "Hair Loss"]);
+  });
 }
 
 // ── SLOTS ──────────────────────────────────────────────

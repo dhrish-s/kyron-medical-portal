@@ -86,3 +86,8 @@ For local testing, run on localhost with Chrome microphone
 permissions manually enabled.
 ```
 
+## 🔄 Returning Patient Recognition
+Kyra recognizes returning patients within the same session and greets 
+them with their visit history. Persistent cross-session recognition 
+is ready to be connected to a database (MongoDB/PostgreSQL).
+

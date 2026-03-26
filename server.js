@@ -244,6 +244,7 @@ app.post('/api/book', async (req, res) => {
   slot
 );
 const icsBase64 = Buffer.from(icsContent).toString('base64');
+savePatientHistory(patient, doctor, slot, confirmationNumber);
 res.json({ success: true, confirmationNumber, doctorName: doctor.name, icsBase64 });
 
   } catch (err) {
@@ -263,6 +264,43 @@ app.post('/api/vapi-context', (req, res) => {
   };
   res.json({ success: true, sessionId });
 });
+
+// ─── PATIENT HISTORY ──────────────────────────────────
+global.patientHistory = global.patientHistory || {};
+
+function savePatientHistory(patient, doctor, slot, confirmationNumber) {
+  const key = patient.email.toLowerCase();
+  if (!global.patientHistory[key]) {
+    global.patientHistory[key] = { patient, visits: [] };
+  }
+  global.patientHistory[key].visits.push({
+    doctor: doctor.name,
+    specialty: doctor.specialty,
+    date: slot.date,
+    time: slot.time,
+    confirmationNumber,
+    bookedAt: new Date().toISOString()
+  });
+}
+
+app.post('/api/check-patient', (req, res) => {
+  const { email } = req.body;
+  const key = email?.toLowerCase();
+  const history = global.patientHistory[key];
+  if (history && history.visits.length > 0) {
+    const last = history.visits[history.visits.length - 1];
+    res.json({
+      returning: true,
+      firstName: history.patient.firstName,
+      lastName: history.patient.lastName,
+      lastVisit: last
+    });
+  } else {
+    res.json({ returning: false });
+  }
+});
+
+
 
 app.get('/api/vapi-context/:sessionId', (req, res) => {
   const session = (global.vapiSessions || {})[req.params.sessionId];
