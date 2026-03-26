@@ -663,6 +663,7 @@ async function startVapiCall() {
   }
   try {
     if (!window.Vapi) await loadScript("https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.5.2/dist/vapi.min.js");
+        await delay(500);
 
     const firstMsg = state.patient.firstName
       ? "Hello " + state.patient.firstName + "! This is Kyra from Kyron Medical. I have your chat context — let's continue where we left off."
@@ -673,7 +674,9 @@ async function startVapiCall() {
       (state.selectedSlot  ? "Slot: " + state.selectedSlot.date + " at " + state.selectedSlot.time + ". " : "") +
       "Never provide medical advice.";
 
-    vapiInstance = new window.Vapi(VAPI_PUBLIC_KEY);
+    const VapiClass = window.Vapi || (window.exports && window.exports.default);
+if (!VapiClass) throw new Error("Vapi SDK not loaded");
+vapiInstance = new VapiClass(VAPI_PUBLIC_KEY);
 
     vapiInstance.on("call-start", () => {
       document.getElementById("vapi-bar").classList.add("show");
