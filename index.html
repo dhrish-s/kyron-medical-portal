@@ -555,7 +555,7 @@ async function bookAppointment() {
     const data = await res.json();
     if (data.success) {
       state.step = "complete";
-      addAI(buildConfirmCard(data.confirmationNumber), true);
+      addAI(buildConfirmCard(data.confirmationNumber, data.icsBase64), true);
       await delay(400);
       addAI("A confirmation email has been sent to <strong>" + esc(state.patient.email) + "</strong>. 📧<br><br>Is there anything else I can help you with?", true);
       setChips(["📅 Book Another Appointment", "📍 Office Info", "💊 Prescription Refill"]);
@@ -571,7 +571,17 @@ async function bookAppointment() {
 }
 
 // ── CARD BUILDERS ──────────────────────────────────────
-function buildConfirmCard(ref) {
+function buildConfirmCard(ref, icsBase64) {
+  const calLink = icsBase64 
+    ? `<a href="data:text/calendar;base64,${icsBase64}" download="kyron-appointment.ics" 
+        style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:9px 18px;
+        border-radius:10px;background:linear-gradient(135deg,#1a4a8a,#2d7dd2);
+        color:white;text-decoration:none;font-size:13px;font-weight:600;
+        box-shadow:0 4px 14px rgba(45,125,210,.4)">
+        📅 Add to Calendar
+      </a>` 
+    : '';
+
   return '<div class="confirm-card">' +
     '<div class="check">✅</div>' +
     '<h4>Appointment Confirmed!</h4>' +
@@ -581,6 +591,7 @@ function buildConfirmCard(ref) {
     '<strong>Time:</strong> ' + esc(state.selectedSlot.time) + '<br>' +
     '<strong>Location:</strong> 2847 Westlake Medical Drive, Suite 400, Los Angeles, CA 90025</p>' +
     '<div class="ref">Confirmation #: ' + esc(ref) + ' &nbsp;·&nbsp; Session: ' + esc(state.sessionId) + '</div>' +
+    calLink +
   '</div>';
 }
 

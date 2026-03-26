@@ -167,6 +167,31 @@ app.post('/api/slots', (req, res) => {
 });
 
 // ─── API: BOOK APPOINTMENT ────────────────────────────
+
+function generateICS(patient, doctor, slot) {
+  const dateStr = slot.iso.replace(/-/g, '');
+  const timeStr = slot.time.replace(/:/g, '').replace(' AM','').replace(' PM','');
+  const hour = parseInt(slot.time.split(':')[0]);
+  const isPM = slot.time.includes('PM');
+  const hour24 = isPM && hour !== 12 ? hour + 12 : (!isPM && hour === 12 ? 0 : hour);
+  const startTime = `${dateStr}T${String(hour24).padStart(2,'0')}${slot.time.split(':')[1].substring(0,2)}00`;
+  const endHour = String(hour24 + 1).padStart(2,'0');
+  const endTime = `${dateStr}T${endHour}${slot.time.split(':')[1].substring(0,2)}00`;
+  
+  return `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Kyron Medical//EN
+BEGIN:VEVENT
+DTSTART:${startTime}
+DTEND:${endTime}
+SUMMARY:Appointment with ${doctor.name}
+DESCRIPTION:${doctor.specialty} appointment at Kyron Medical.\\nConfirmation: ${patient.confirmationNumber}\\nPlease arrive 15 minutes early.
+LOCATION:2847 Westlake Medical Drive Suite 400 Los Angeles CA 90025
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR`;
+}
+
 app.post('/api/book', async (req, res) => {
   try {
     const { patient, doctorId, slot, sessionId } = req.body;
@@ -213,7 +238,14 @@ app.post('/api/book', async (req, res) => {
       `
     });
 
-    res.json({ success: true, confirmationNumber, doctorName: doctor.name });
+    const icsContent = generateICS(
+  {...patient, confirmationNumber}, 
+  doctor, 
+  slot
+);
+const icsBase64 = Buffer.from(icsContent).toString('base64');
+res.json({ success: true, confirmationNumber, doctorName: doctor.name, icsBase64 });
+
   } catch (err) {
     console.error('Booking error:', err);
     res.status(500).json({ error: err.message });
